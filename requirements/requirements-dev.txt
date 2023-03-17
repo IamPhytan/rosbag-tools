@@ -1,0 +1,4 @@
+-r requirements-common.txt
+black
+pylint
+bumpversion
