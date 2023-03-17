@@ -1,3 +1,37 @@
+[build-system]
+requires = ["flit"]
+build-backend = "flit.buildapi"
+
+[project]
+name = "rosbag-tools"
+authors = [{ name = "damienlarocque", email = "phicoltan@gmail.com" }]
+license = { file = "LICENSE" }
+requires-python = ">=3.9"
+dependencies = ["pyyaml", "rosbags", "tqdm"]
+readme = "README.md"
+classifiers = [
+    "License :: OSI Approved :: GNU General Public License v3 or later (GPLv3+)",
+    "Programming Language :: Python",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+]
+dynamic = ["version", "description"]
+
+[project.optional-dependencies]
+plot = ["matplotlib"]
+dev = ["black", "pylint", "bump2version"]
+
+[project.urls]
+Homepage = "https://github.com/IamPhytan/rosbag-tools"
+"Repository on GitHub" = "https://github.com/IamPhytan/rosbag-tools"
+"Repository on GitLab" = "https://gitlab.com/damienlarocque/rosbag-tools"
+
+# [project.scripts]
+# rosbag-topic-compare = "rosbag_topic_compare.__main__:main"
+# rosbag-topic-remove = "rosbag_topic_remove.__main__:main"
+
 [tool.isort]
 profile = "black"
 
