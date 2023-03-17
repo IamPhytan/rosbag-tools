@@ -1,4 +1,5 @@
-rosbags
-tqdm
+click
 matplotlib
 pyyaml
+rosbags
+tqdm
