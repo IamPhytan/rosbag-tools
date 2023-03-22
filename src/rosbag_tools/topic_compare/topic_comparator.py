@@ -143,7 +143,7 @@ class BagTopicComparator:
         with Reader(filename) as bag:
             return list(bag.topics.keys())
 
-    def verify_data_extraction(self, caller_name: str):
+    def _check_data_extraction(self, caller_name: str):
         """Assert that extract_data() was called"""
         if not self.topics:
             raise RuntimeError(
@@ -158,7 +158,7 @@ class BagTopicComparator:
             path: path of the metadata file. Defaults to None.
             If None, the topics will be saved in topics_<foldername>.json.
         """
-        self.verify_data_extraction(self.export_metadata.__name__)
+        self._check_data_extraction(self.export_metadata.__name__)
 
         # Default value
         path = f"topics_{self.folder.resolve().name}.json" if path is None else path
@@ -196,7 +196,7 @@ class BagTopicComparator:
                 "matplotlib is not included in the installed version of rosbag-topic-compare. Install 'rosbag-topic-compare[plot]'"
             )
 
-        self.verify_data_extraction(self.plot.__name__)
+        self._check_data_extraction(self.plot.__name__)
 
         # Get the difference dictionary
         diff = self.topics["difference"]
