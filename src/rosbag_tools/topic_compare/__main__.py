@@ -40,7 +40,8 @@ Version:
 - rosbag-topic-compare v0.0.3
 """
 
-from rosbag_tools.main import cli
+from rosbag_tools.topic_compare import cli as topic_compare
+
 
 if __name__ == "__main__":
-    cli()
+    topic_compare()
