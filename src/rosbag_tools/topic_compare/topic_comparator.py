@@ -193,7 +193,7 @@ class BagTopicComparator:
 
         if not mtp:
             raise ImportError(
-                "matplotlib is not included in the installed version of rosbag-topic-compare. Install 'rosbag-topic-compare[plot]'"
+                "matplotlib is not included in the installed version of rosbag-tools. Install 'rosbag-tools[plot]'"
             )
 
         self._check_data_extraction(self.plot.__name__)

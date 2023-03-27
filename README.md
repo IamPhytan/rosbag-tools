@@ -17,13 +17,23 @@ Say you have too much topics in a rosbag (ROS1 or ROS2) and that you want to kee
 
 `rosbag-tools` can be installed from PyPi :
 
-```console
+```sh
 pip install rosbag-tools
+```
+
+Some tools, like [`topic-compare`](src/rosbag_tools/topic_compare), have a graphing feature that requires `matplotlib`. Install `rosbag-tools[plot]` to install graph dependencies.
+
+```sh
+pip install rosbag-tools[plot]
 ```
 
 ## Usage
 
 Each tool in `rosbag-tools` can be used both as a command line application and in Python code.
+
+## Tools
+
+* [`topic-compare`](src/rosbag_tools/topic_compare)
 
 ### Command line
 

@@ -29,7 +29,7 @@ from .topic_comparator import BagTopicComparator
 @click.option(
     "--fig",
     "--summary-figure-path",
-    help="Path for saving a topic consistency figure",
+    help="Topic consistency figure export path",
 )
 def cli(bagfolder, metadata, plot, fig, *args):
     """Compare rosbag files that are stored in BAGFOLDER
