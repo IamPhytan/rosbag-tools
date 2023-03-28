@@ -121,4 +121,4 @@ This package relies strongly on [`rosbags`](https://ternaris.gitlab.io/rosbags) 
 
 ## License
 
-This project is licensed under a [GNU GP](LICENSE) license
+This project is licensed under a [GNU GPLv3](LICENSE) license.
