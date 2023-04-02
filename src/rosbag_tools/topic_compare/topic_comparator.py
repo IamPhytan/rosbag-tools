@@ -30,6 +30,11 @@ class BagTopicComparator:
     Determines which topics are missing for each rosbag, by comparing with others"""
 
     def __init__(self, path: Path | str) -> None:
+        """Instantiate BagTopicComparator
+
+        Args:
+            path: Path to a dataset directory that contains rosbag files
+        """
         self._folder = Path(path)
         self.topics = {}
 

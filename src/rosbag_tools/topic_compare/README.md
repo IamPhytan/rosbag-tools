@@ -4,7 +4,7 @@
 
 ## Use case
 
-Say you have a bunch of rosbags gathered inside a folder and you don't know whether or not all those rosbags contain the same data with the same topics. `rosbag-topic-compare` will :
+Say you have a bunch of rosbags gathered inside a folder and you don't know whether or not all those rosbags contain the same data with the same topics. `rosbag-tools topic-compare` will :
 
 * retrieve a list of the topics contained in each rosbag
 * export a summary of the topics in a JSON or YAML file
