@@ -1,7 +1,6 @@
 import click
-from . import topic_compare
 
-from . import __version__
+from . import __version__, topic_compare, topic_remove
 
 CONTEXT_SETTINGS = {"help_option_names": ["-h", "--help"]}
 
@@ -14,6 +13,7 @@ def cli_main():
 
 
 cli_main.add_command(topic_compare)
+cli_main.add_command(topic_remove)
 
 
 if __name__ == "__main__":
