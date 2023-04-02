@@ -27,13 +27,13 @@ Some tools, like [`topic-compare`](src/rosbag_tools/topic_compare), have a graph
 pip install rosbag-tools[plot]
 ```
 
-## Usage
-
-Each tool in `rosbag-tools` can be used both as a command line application and in Python code.
-
 ## Tools
 
 * [`topic-compare`](src/rosbag_tools/topic_compare)
+
+## Usage
+
+Each tool in `rosbag-tools` can be used both as a command line application and in Python code.
 
 ### Command line
 
@@ -43,60 +43,9 @@ A basic use of `rosbag-tools` is to simply call it from the command line.
 rosbag-tools `command` <options>
 ```
 
-<!-- Here are all the CLI options of `rosbag-topic-remove`:
-
-```console
-$ rosbag-topic-remove -h
-usage: rosbag-topic-remove [-h] [-o OUTBAG] [-t TOPICS [TOPICS ...]] [-f]
-                           inbag
-
-positional arguments:
-  inbag                 Input bag
-
-options:
-  -h, --help            show this help message and exit
-  -o OUTBAG, --output OUTBAG, --outbag OUTBAG
-                        Filtered bag
-  -t TOPICS [TOPICS ...], --topics TOPICS [TOPICS ...]
-                        Topics to remove from the rosbag
-  -f, --force           Force output file overwriting
-
-```
-
-### Python Code API
-
-You can also call `rosbag-topic-remove` directly into your Python code :
-
-```py
-from rosbag_topic_remove import BagTopicRemover
-
-data_path = "path/to/a/rosbag.bag"  # ROS1
-data_path = "path/to/a/rosbag"  # ROS2
-rbag_rem = BagTopicRemover(data_path)
-
-# Change the input bag
-rbag_rem.inbag = "path/to/another/rosbag"
-
-# Remove /cmd_vel
-rbag_rem.remove("/cmd_vel")
-
-# Remove /cmd_vel
-rbag_rem.remove("/cmd_vel")
-
-# Remove all camera info topics
-rbag_rem.remove("/*/camera_info")
-
-# Remove all topics from the IMU and from the GPS
-rbag_rem.remove(("/imu/*", "/gps/*"))
-
-# Export a rosbag with all topics filtered
-rbag_rem.export("path/to/save/this/filtered/rosbag.bag")  # ROS1
-rbag_rem.export("path/to/save/that/filtered/rosbag")  # ROS2
-``` -->
-
 ## Contributing
 
-Pull requests are welcome and don't hesitate to open issues
+Pull requests and issues are welcome ! Don't hesitate to contribute !
 
 (Recommended) [flit](https://flit.pypa.io) is used to package this module. Development packages can be installed using `flit` :
 

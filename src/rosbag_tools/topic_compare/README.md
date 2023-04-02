@@ -51,7 +51,7 @@ Options:
 
 ### Python Code API
 
-You can also call `rosbag-topic-compare` directly into your Python code :
+You can also call `rosbag-tools topic-compare` directly into your Python code :
 
 ```py
 from rosbag_tools.topic_compare import BagTopicComparator
