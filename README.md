@@ -4,15 +4,6 @@
 
 This package bundles different tools that can be applied on ROS 1 or ROS 2 rosbags with no dependency on the ROS software stack.
 
-<!-- ## Use case
-
-Say you have too much topics in a rosbag (ROS1 or ROS2) and that you want to keep a copy of this rosbag without data from a specific sensor. `rosbag-topic-remove` will :
-
-* Filter out topics based on their name
-* Filter out topics based on [glob](https://en.wikipedia.org/wiki/Glob_(programming))-like wildcard patterns
-* Preserve your original rosbag -->
-<!-- * Convert your rosbag from ROS1 to ROS2, if needed -->
-
 ## Installation
 
 `rosbag-tools` can be installed from PyPi :

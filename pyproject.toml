@@ -33,7 +33,6 @@ Homepage = "https://github.com/IamPhytan/rosbag-tools"
 
 [project.scripts]
 rosbag-tools = "rosbag_tools.__main__:cli_main"
-# rosbag-topic-remove = "rosbag_topic_remove.__main__:main"
 
 [tool.isort]
 profile = "black"
