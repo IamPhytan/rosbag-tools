@@ -4,7 +4,7 @@
 
 ## Use case
 
-Say you have too much topics in a rosbag (ROS1 or ROS2) and that you want to keep a copy of this rosbag without data from a specific sensor. `rosbag-tools topic-remove` will :
+Say you have too much topics in a rosbag (ROS 1 or ROS 2) and that you want to keep a copy of this rosbag without data from a specific sensor. `rosbag-tools topic-remove` will :
 
 * Filter out topics based on their name
 * Filter out topics based on [glob](https://en.wikipedia.org/wiki/Glob_(programming))-like wildcard patterns
@@ -50,8 +50,8 @@ You can also call `rosbag-tools topic-remove` directly into your Python code :
 ```py
 from rosbag_tools.topic_remove import BagTopicRemover
 
-data_path = "path/to/a/rosbag.bag"  # ROS1
-data_path = "path/to/a/rosbag"  # ROS2
+data_path = "path/to/a/rosbag.bag"  # ROS 1
+data_path = "path/to/a/rosbag"  # ROS 2
 topic_remover = BagTopicRemover(data_path)
 
 # Change the input bag
@@ -70,6 +70,6 @@ topic_remover.remove("/*/camera_info")
 topic_remover.remove(("/imu/*", "/gps/*"))
 
 # Export a rosbag with all topics filtered
-topic_remover.export("path/to/save/this/filtered/rosbag.bag")  # ROS1
-topic_remover.export("path/to/save/that/filtered/rosbag")  # ROS2
+topic_remover.export("path/to/save/this/filtered/rosbag.bag")  # ROS 1
+topic_remover.export("path/to/save/that/filtered/rosbag")  # ROS 2
 ```

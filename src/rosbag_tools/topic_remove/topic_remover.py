@@ -171,7 +171,7 @@ class BagTopicRemover:
         Writer = self.get_writer_class(path)
         if self._is_ros1_reader != self._is_ros1_writer:
             raise NotImplementedError(
-                "Rosbag conversion (ROS1->ROS2 / ROS2->ROS1) is not supported. "
+                "Rosbag conversion (ROS 1->ROS 2 / ROS 2->ROS 1) is not supported. "
                 "Use `rosbags` to convert your rosbag before using `rosbag-tools topic-remove`."
             )
         with Reader(self.inbag) as reader, Writer(outpath) as writer:
@@ -192,7 +192,7 @@ class BagTopicRemover:
                             ext.latching,
                         )
                     else:
-                        # ROS2
+                        # ROS 2
                         conn_map[conn.id] = writer.add_connection(
                             conn.topic,
                             conn.msgtype,

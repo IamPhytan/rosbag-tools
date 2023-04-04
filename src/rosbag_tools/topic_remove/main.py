@@ -36,7 +36,7 @@ def cli(inbag, outbag, topics, force):
     """Remove topics from INBAG
 
     INBAG is the path to a rosbag file
-    Can be a bag in ROS1 or in ROS2
+    Can be a bag in ROS 1 or in ROS 2
     """
     inpath = Path(inbag)
     outpath = Path(outbag)
