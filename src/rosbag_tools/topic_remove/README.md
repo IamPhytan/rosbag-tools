@@ -27,20 +27,18 @@ Here are all the CLI options of `rosbag-tools topic-remove`:
 
 ```console
 $ rosbag-tools topic-remove -h
-usage: rosbag-tools topic-remove [-h] [-o OUTBAG] [-t TOPICS [TOPICS ...]] [-f]
-                           inbag
+Usage: rosbag-tools topic-remove [OPTIONS] INBAG
 
-positional arguments:
-  inbag                 Input bag
+  Remove topics from INBAG
 
-options:
-  -h, --help            show this help message and exit
-  -o OUTBAG, --output OUTBAG, --outbag OUTBAG
-                        Filtered bag
-  -t TOPICS [TOPICS ...], --topics TOPICS [TOPICS ...]
-                        Topics to remove from the rosbag
-  -f, --force           Force output file overwriting
+  INBAG is the path to a rosbag file
+  Can be a bag in ROS 1 or in ROS 2
 
+Options:
+  -o, --output, --outbag TEXT  Filtered bag. Defaults to INBAG_filt
+  -t, --topics TEXT
+  -f, --force-overwriting      Force output file overwriting
+  -h, --help                   Show this message and exit.
 ```
 
 ### Python Code API
