@@ -48,5 +48,7 @@ def cli(inbag, outbag, force, start_time=None, end_time=None):
     INBAG is the path to a rosbag file
     Can be a bag in ROS 1 or in ROS 2
     """
-    print(inbag, outbag, start_time, end_time)
+    # TODO: Add default behavior
+    # TODO: Send to `rosbags-clip` folder or *_filt file
+    print(inbag, outbag, start_time, end_time, force)
     clipper = BagClipper(inbag)
