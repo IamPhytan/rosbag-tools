@@ -2,18 +2,20 @@
 
 from __future__ import annotations
 
+import shutil
+import warnings
 from pathlib import Path
 from typing import TYPE_CHECKING, cast
-from tqdm import tqdm
 
+from rosbags.interfaces import ConnectionExtRosbag1, ConnectionExtRosbag2
 from rosbags.rosbag1 import Reader as Reader1
 from rosbags.rosbag1 import Writer as Writer1
 from rosbags.rosbag2 import Reader as Reader2
 from rosbags.rosbag2 import Writer as Writer2
-from rosbags.interfaces import ConnectionExtRosbag1, ConnectionExtRosbag2
+from tqdm import tqdm
 
 if TYPE_CHECKING:
-    from typing import Dict, Optional, Type
+    from typing import Optional, Type
 
 
 class UnknownStartTimeError(ValueError):
@@ -85,6 +87,21 @@ class BagClipper:
         self._is_ros1_writer = is_ros1
         return Writer1 if is_ros1 else Writer2
 
+    def delete_rosbag(self, path: Path | str):
+        """Function to delete a rosbag at path `path`, to use with caution
+
+        Args:
+            path: Path to rosbag to delete.
+        """
+        is_ros1 = path.is_file() and path.suffix == ".bag"
+        is_ros2 = path.is_dir() and len(tuple(path.glob("*.db3"))) > 0
+        if is_ros1:
+            path.unlink()
+        elif is_ros2:
+            shutil.rmtree(path)
+        else:
+            raise ValueError(f"Path {path} is not a valid rosbag")
+
     def _check_cutoff_limits(
         self, start: Optional[float] = None, end: Optional[float] = None
     ):
@@ -146,8 +163,9 @@ class BagClipper:
         else:
             end_ns = end * 10**9
             e_cliptstamp = self._bag_start + end_ns
-        export_path = Path(outbag_path)
 
+        # Check Export Path
+        export_path = Path(outbag_path)
         if export_path == self._in_path:
             raise FileExistsError(
                 f"Cannot use same file as input and output [{export_path}]"
@@ -158,23 +176,45 @@ class BagClipper:
                 "Use 'force_out=True' or 'rosbag-tools clip -f' to "
                 f"export to {outbag_path} even if output bag already exists."
             )
+        if export_path.exists() and force_out:
+            warnings.warn(
+                f"Output path {export_path} already exists, output overwriting flag has been set, deleting old output file"
+            )
+            self.delete_rosbag(export_path)
 
+        # Reader / Writer classes
         Reader = self.get_reader_class(self._in_path)
         Writer = self.get_writer_class(outbag_path)
-
-        with Reader(self._in_path) as reader, Writer(outbag_path) as writer:
+        if self._is_ros1_reader != self._is_ros1_writer:
+            raise NotImplementedError(
+                "Rosbag conversion (ROS 1->ROS 2 / ROS 2->ROS 1) is not supported. "
+                "Use `rosbags` to convert your rosbag before using `rosbag-tools clip`."
+            )
+        with Reader(self._in_path) as reader, Writer(export_path) as writer:
             conn_map = {}
             ConnectionExt = (
                 ConnectionExtRosbag1 if self._is_ros1_writer else ConnectionExtRosbag2
             )
             for conn in reader.connections:
                 ext = cast(ConnectionExt, conn.ext)
-                conn_map[conn.id] = writer.add_connection(
-                    conn.topic,
-                    conn.msgtype,
-                    ext.serialization_format,
-                    ext.offered_qos_profiles,
-                )
+                if self._is_ros1_writer:
+                    # ROS 1
+                    conn_map[conn.id] = writer.add_connection(
+                        conn.topic,
+                        conn.msgtype,
+                        conn.msgdef,
+                        conn.md5sum,
+                        ext.callerid,
+                        ext.latching,
+                    )
+                else:
+                    # ROS 2
+                    conn_map[conn.id] = writer.add_connection(
+                        conn.topic,
+                        conn.msgtype,
+                        ext.serialization_format,
+                        ext.offered_qos_profiles,
+                    )
 
             with tqdm(total=reader.message_count) as pbar:
                 for conn, timestamp, data in reader.messages():
