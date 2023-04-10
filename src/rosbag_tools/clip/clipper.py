@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from pathlib import Path
 from typing import TYPE_CHECKING, cast
+from tqdm import tqdm
 
 from rosbags.rosbag1 import Reader as Reader1
 from rosbags.rosbag1 import Writer as Writer1
@@ -40,20 +41,20 @@ class BagClipper:
         self,
         path: Path | str,
     ) -> None:
-        self._in_path: Path = Path(path)
         self._bag_start: float = None
         self._bag_end: float = None
         self._bag_duration: float = None
         self._is_ros1_reader: bool = None
         self._is_ros1_writer: bool = None
+        self.in_path: Path = Path(path)
 
     @property
-    def path(self):
+    def in_path(self):
         """Path to input rosbag"""
         return self._in_path
 
-    @path.setter
-    def path(self, value: Path | str):
+    @in_path.setter
+    def in_path(self, value: Path | str):
         # Check that path exists
         if not Path(value).exists():
             raise FileNotFoundError(
@@ -154,7 +155,8 @@ class BagClipper:
         if export_path.exists() and not force_out:
             raise FileExistsError(
                 f"Path {outbag_path} already exists. "
-                f"Use 'force_out=True' or 'rosbag-clip -f' to export to {outbag_path} even if output bag already exists."
+                "Use 'force_out=True' or 'rosbag-tools clip -f' to "
+                f"export to {outbag_path} even if output bag already exists."
             )
 
         Reader = self.get_reader_class(self._in_path)
@@ -174,8 +176,10 @@ class BagClipper:
                     ext.offered_qos_profiles,
                 )
 
-            for conn, timestamp, data in reader.messages():
-                if s_cliptstamp <= timestamp <= e_cliptstamp:
-                    writer.write(conn_map[conn.id], timestamp, data)
+            with tqdm(total=reader.message_count) as pbar:
+                for conn, timestamp, data in reader.messages():
+                    if s_cliptstamp <= timestamp <= e_cliptstamp:
+                        writer.write(conn_map[conn.id], timestamp, data)
+                    pbar.update(1)
 
         print(f"[clip] Clipping done ! Exported in {outbag_path}")
