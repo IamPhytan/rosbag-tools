@@ -22,6 +22,7 @@ pip install rosbag-tools[plot]
 
 * [`topic-compare`](src/rosbag_tools/topic_compare)
 * [`topic-remove`](src/rosbag_tools/topic_remove)
+* [`clip`](src/rosbag_tools/clip)
 
 ## Usage
 
