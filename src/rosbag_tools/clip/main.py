@@ -50,5 +50,22 @@ def cli(inbag, outbag, force, start_time=None, end_time=None):
     """
     # TODO: Add default behavior
     # TODO: Send to `rosbags-clip` folder or *_filt file
-    print(inbag, outbag, start_time, end_time, force)
     clipper = BagClipper(inbag)
+    if outbag:
+        clipper.clip_rosbag(
+            start=start_time,
+            end=end_time,
+            outbag_path=outbag,
+            force_out=force,
+        )
+    else:
+        inpath = Path(inbag)
+        outdir_default = inpath.parent / "rosbags-clips"
+        outdir_default.mkdir(parents=True, exist_ok=True)
+        n_clips = len(list(outdir_default.glob(f"{inpath.stem}*")))
+        print(n_clips)
+        out_fname = f"{inpath.stem}_clip_{n_clips:02d}{inpath.suffix}"
+        outpath_default = outdir_default / out_fname
+        clipper.clip_rosbag(
+            start=start_time, end=end_time, outbag_path=outpath_default, force_out=force
+        )
