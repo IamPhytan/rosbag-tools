@@ -93,7 +93,7 @@ class BagTopicComparator:
             return cls.from_dict(yaml.safe_load(file))
 
     def extract_data(self) -> None:
-        """Extract all the topics cointaned in the rosbags at the path {self.folder}"""
+        """Extract all the topics contained in the rosbags in the path self.folder"""
         paths_ros1 = self.folder.glob("*.bag")
         paths_ros2 = (p.parent for p in self.folder.glob("**/*.db3"))
         paths = list(paths_ros1) + list(paths_ros2)
