@@ -48,23 +48,23 @@ class BagClipper:
         self._bag_duration: float = None
         self._is_ros1_reader: bool = None
         self._is_ros1_writer: bool = None
-        self.in_path: Path = Path(path)
+        self.inbag: Path = Path(path)
 
     @property
-    def in_path(self):
+    def inbag(self):
         """Path to input rosbag"""
-        return self._in_path
+        return self._inbag
 
-    @in_path.setter
-    def in_path(self, value: Path | str):
+    @inbag.setter
+    def inbag(self, value: Path | str):
         # Check that path exists
         if not Path(value).exists():
             raise FileNotFoundError(
                 f"File {value} is not an existing file. Please provide a path that exists in your file system"
             )
-        self._in_path = Path(value)
-        Reader = self.get_reader_class(self._in_path)
-        with Reader(self._in_path) as bag:
+        self._inbag = Path(value)
+        Reader = self.get_reader_class(self._inbag)
+        with Reader(self._inbag) as bag:
             self._bag_start = bag.start_time
             self._bag_end = bag.end_time
             self._bag_duration = bag.duration
@@ -166,7 +166,7 @@ class BagClipper:
 
         # Check Export Path
         export_path = Path(outbag_path)
-        if export_path == self._in_path:
+        if export_path == self._inbag:
             raise FileExistsError(
                 f"Cannot use same file as input and output [{export_path}]"
             )
@@ -183,14 +183,14 @@ class BagClipper:
             self.delete_rosbag(export_path)
 
         # Reader / Writer classes
-        Reader = self.get_reader_class(self._in_path)
+        Reader = self.get_reader_class(self._inbag)
         Writer = self.get_writer_class(outbag_path)
         if self._is_ros1_reader != self._is_ros1_writer:
             raise NotImplementedError(
                 "Rosbag conversion (ROS 1->ROS 2 / ROS 2->ROS 1) is not supported. "
                 "Use `rosbags` to convert your rosbag before using `rosbag-tools clip`."
             )
-        with Reader(self._in_path) as reader, Writer(export_path) as writer:
+        with Reader(self._inbag) as reader, Writer(export_path) as writer:
             conn_map = {}
             ConnectionExt = (
                 ConnectionExtRosbag1 if self._is_ros1_writer else ConnectionExtRosbag2
