@@ -1,6 +1,12 @@
 Changelog
 =========
 
+0.0.4
+-----------------------------
+
+- Fix bug in the default behaviour of `topic-remove`. Thanks to @jmfortin for reporting the error.
+- Add a [release procedure](RELEASE.md)
+
 0.0.3
 -----------------------------
 
