@@ -39,11 +39,11 @@ def cli(inbag, outbag, topics, force):
     Can be a bag in ROS 1 or in ROS 2
     """
     inpath = Path(inbag)
-    outpath = Path(outbag)
 
     rosbag_rem = BagTopicRemover(inbag)
     rosbag_rem.remove(topics)
-    if outpath:
+    if outbag:
+        outpath = Path(outbag)
         rosbag_rem.export(outpath, force_output_overwrite=force)
     else:
         # Default path:
