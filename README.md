@@ -18,6 +18,13 @@ Some tools, like [`topic-compare`](src/rosbag_tools/topic_compare), have a graph
 pip install rosbag-tools[plot]
 ```
 
+`rosbag-tools` being a CLI application, it can be quickly installed with [pipx](https://github.com/pypa/pipx):
+
+```sh
+pipx install rosbag-tools
+pipx install rosbag-tools[plot] # with plot
+```
+
 ## Tools
 
 * [`topic-compare`](src/rosbag_tools/topic_compare)
