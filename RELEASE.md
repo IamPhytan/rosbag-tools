@@ -7,7 +7,7 @@
 
 * Upload release to PyPi
 
-    `flit upload`
+    `flit publish`
 
 * Push to both repositories
 
