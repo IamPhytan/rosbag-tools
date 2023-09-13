@@ -5,7 +5,7 @@
 ## Use case
 
 This tool can be used to retreive the duration of every rosbag in a dataset. It can be used to summarize the content of a dataset with rosbag files.
-`rosbag-tools topic-compare` will :
+`rosbag-tools compute-duration` will :
 
 * compute the duration of every rosbag in your dataset
 * return the total record duration of the dataset
