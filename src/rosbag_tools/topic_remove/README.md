@@ -19,7 +19,7 @@ Say you have too much topics in a rosbag (ROS 1 or ROS 2) and that you want to k
 A basic use of `topic-remove` is to simply call it from the command line.
 
 ```console
-rosbag-tools topic-remove /path/to/rosbag -t /topic/to_delete
+rosbag-tools topic-remove /path/to/rosbag -t /topic/to_delete -t /another/topic/to/remove
 rosbag-tools topic-remove /path/to/rosbag -t *sensor*
 ```
 

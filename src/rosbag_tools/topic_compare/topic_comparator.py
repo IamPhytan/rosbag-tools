@@ -134,14 +134,14 @@ class BagTopicComparator:
         }
 
     @staticmethod
-    def get_topics(filename: Path | str) -> List:
+    def get_topics(filename: Path | str) -> List[str]:
         """Get a list of the topics in a rosbag file
 
         Args:
             filename: path of the rosbag file
 
         Returns:
-            [type]: list of the topics contained in the rosbag file
+            List[str]: list of the topics contained in the rosbag file
         """
         ros1 = filename.suffix == ".bag"
         Reader = Reader1 if ros1 else Reader2
