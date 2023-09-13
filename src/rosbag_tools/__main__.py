@@ -1,6 +1,6 @@
 import click
 
-from . import __version__, clip, topic_compare, topic_remove
+from . import __version__, clip, compute_duration, topic_compare, topic_remove
 
 CONTEXT_SETTINGS = {"help_option_names": ["-h", "--help"]}
 
@@ -12,9 +12,10 @@ def cli_main():
     pass
 
 
+cli_main.add_command(clip)
+cli_main.add_command(compute_duration)
 cli_main.add_command(topic_compare)
 cli_main.add_command(topic_remove)
-cli_main.add_command(clip)
 
 
 if __name__ == "__main__":
