@@ -1,0 +1,9 @@
+cff-version: 1.2.0
+message: "If you use this software in an academic work, please cite it as below."
+authors:
+  - family-names: "LaRocque"
+    given-names: "Damien"
+    orcid: https://orcid.org/my-orcid?orcid=0000-0003-3256-046X
+title: "A ROS-agnostic toolbox for common rosbag operations"
+version: 0.0.5
+date-released: 2023-09-13
