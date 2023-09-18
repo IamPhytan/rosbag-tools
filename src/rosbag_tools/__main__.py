@@ -4,6 +4,7 @@ from rosbag_tools import (
     __version__,
     clip,
     compute_duration,
+    split,
     topic_compare,
     topic_remove,
 )
@@ -19,6 +20,7 @@ def cli_main():
 
 
 cli_main.add_command(clip)
+cli_main.add_command(split)
 cli_main.add_command(compute_duration)
 cli_main.add_command(topic_compare)
 cli_main.add_command(topic_remove)
