@@ -71,7 +71,7 @@ def cli(inbag, outbag, force, timestamps=None, timestamps_file=None):
         # Received list of timestamps
         tstamps_values = json.loads(timestamps)
     else:
-        tstamps_values = [-1]
+        tstamps_values = []
     tstamps = [float(v) for v in tstamps_values]
     if outbag:
         splitter.split_rosbag(

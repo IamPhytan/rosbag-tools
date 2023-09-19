@@ -100,13 +100,11 @@ class BagSplitter:
             InvalidTimestampError: _raised if `timestamp` is not in the rosbag_
         """
         for ts in timestamps:
-            time_ns = self.etoa(ts)
-            if time_ns < self._bag_start:
+            if ts < 0:
                 raise exceptions.InvalidTimestampError(
-                    f"Split time (s: {ts}) should come "
-                    f"after start time (ns: {self._bag_start})."
+                    f"Split time (s: {ts}) should come " f"after start time (s: 0)."
                 )
-            if time_ns > self._bag_end:
+            if ts > self.total_duration:
                 raise exceptions.InvalidTimestampError(
                     f"Split time (s: {ts}) should come "
                     f"before ending time (s: {self.total_duration})."
@@ -205,7 +203,7 @@ class BagSplitter:
         """
         if timestamps is None:
             timestamps = []
-        split_tstamps = [self.etoa(t) for t in timestamps]
+        split_tstamps = [t for t in timestamps]
         self._check_cutoff_limits(split_tstamps)
         split_tstamps.insert(0, 0)
         split_tstamps.append(self.atoe(self._bag_end))
@@ -229,16 +227,15 @@ class BagSplitter:
                     f"{base_path.stem}_{idx:02d}{base_path.suffix}"
                 )
                 self._check_export_path(export_path, force_out)
-                print(split_tstamps)
                 with Writer(export_path) as writer:
                     conn_map = self._set_writer_connections(writer, reader.connections)
                     # Start and end of split
-                    a_tstamp = self._bag_start + split_tstamps[idx - 1]
-                    b_tstamp = self._bag_start + split_tstamps[idx]
-                    with tqdm(total=reader.message_count) as pbar:
+                    a_tstamp = self.etoa(split_tstamps[idx - 1])
+                    b_tstamp = self.etoa(split_tstamps[idx])
+                    with tqdm(total=reader.message_count, desc=f"Split {idx}") as pbar:
                         for conn, timestamp, data in reader.messages():
-                            if conn.topic == "/events/write_split":
-                                continue
+                            # if conn.topic == "/events/write_split":
+                            #     continue
                             if a_tstamp <= timestamp <= b_tstamp:
                                 writer.write(conn_map[conn.id], timestamp, data)
                             elif timestamp > b_tstamp:
