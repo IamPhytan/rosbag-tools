@@ -1,6 +1,8 @@
 from pathlib import Path
+
 import click
-from .topic_remover import BagTopicRemover
+
+from rosbag_tools.topic_remove.topic_remover import BagTopicRemover
 
 
 @click.command(

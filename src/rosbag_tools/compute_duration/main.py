@@ -3,7 +3,7 @@ from pathlib import Path
 
 import click
 
-from .duration_calculator import DurationCalculator
+from rosbag_tools.compute_duration.duration_calculator import DurationCalculator
 
 
 @click.command(

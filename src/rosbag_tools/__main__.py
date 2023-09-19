@@ -1,6 +1,12 @@
 import click
 
-from . import __version__, clip, compute_duration, topic_compare, topic_remove
+from rosbag_tools import (
+    __version__,
+    clip,
+    compute_duration,
+    topic_compare,
+    topic_remove,
+)
 
 CONTEXT_SETTINGS = {"help_option_names": ["-h", "--help"]}
 

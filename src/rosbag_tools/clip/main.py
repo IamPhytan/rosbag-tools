@@ -1,6 +1,8 @@
 from pathlib import Path
+
 import click
-from .clipper import BagClipper
+
+from rosbag_tools.clip.clipper import BagClipper
 
 
 @click.command(

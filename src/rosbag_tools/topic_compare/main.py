@@ -2,7 +2,7 @@ from pathlib import Path
 
 import click
 
-from .topic_comparator import BagTopicComparator
+from rosbag_tools.topic_compare.topic_comparator import BagTopicComparator
 
 
 @click.command(
