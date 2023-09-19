@@ -3,6 +3,7 @@ from pathlib import Path
 import click
 
 from rosbag_tools.topic_remove.topic_remover import BagTopicRemover
+from rosbag_tools.utils import custom_message_path
 
 
 @click.command(
@@ -34,6 +35,7 @@ from rosbag_tools.topic_remove.topic_remover import BagTopicRemover
     help="Force output file overwriting",
     is_flag=True,
 )
+@custom_message_path
 def cli(inbag, outbag, topics, force):
     """Remove topics from INBAG
 

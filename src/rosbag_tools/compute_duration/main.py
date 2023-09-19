@@ -4,6 +4,7 @@ from pathlib import Path
 import click
 
 from rosbag_tools.compute_duration.duration_calculator import DurationCalculator
+from rosbag_tools.utils import custom_message_path
 
 
 @click.command(
@@ -26,6 +27,7 @@ from rosbag_tools.compute_duration.duration_calculator import DurationCalculator
     help="Total duration of all rosbags",
     is_flag=True,
 )
+@custom_message_path
 def cli(bagfolder, metadata, total, *args):
     """Retrieve the duration of every rosbag in BAGFOLDER
 

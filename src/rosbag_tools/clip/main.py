@@ -3,6 +3,7 @@ from pathlib import Path
 import click
 
 from rosbag_tools.clip.clipper import BagClipper
+from rosbag_tools.utils import custom_message_path
 
 
 @click.command(
@@ -44,14 +45,13 @@ from rosbag_tools.clip.clipper import BagClipper
     help="Force output file overwriting",
     is_flag=True,
 )
+@custom_message_path
 def cli(inbag, outbag, force, start_time=None, end_time=None):
     """Clip out a portion of INBAG
 
     INBAG is the path to a rosbag file
     Can be a bag in ROS 1 or in ROS 2
     """
-    # TODO: Add default behavior
-    # TODO: Send to `rosbags-clip` folder or *_filt file
     clipper = BagClipper(inbag)
     if outbag:
         clipper.clip_rosbag(

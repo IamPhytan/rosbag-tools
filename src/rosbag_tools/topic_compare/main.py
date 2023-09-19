@@ -3,6 +3,7 @@ from pathlib import Path
 import click
 
 from rosbag_tools.topic_compare.topic_comparator import BagTopicComparator
+from rosbag_tools.utils import custom_message_path
 
 
 @click.command(
@@ -31,6 +32,7 @@ from rosbag_tools.topic_compare.topic_comparator import BagTopicComparator
     "--summary-figure-path",
     help="Topic consistency figure export path",
 )
+@custom_message_path
 def cli(bagfolder, metadata, plot, fig, *args):
     """Compare rosbag files that are stored in BAGFOLDER
 
