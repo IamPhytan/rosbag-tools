@@ -55,28 +55,30 @@ def cli(inbag, outbag, force, timestamps=None, timestamps_file=None):
     if timestamps_file is not None:
         # Received path to timestamps file
         tstamp_path = Path(timestamps_file)
-        tstamps_content = tstamp_path.read_text(encoding="utf-8").splitlines()
-        if not tstamps_content:
+        tstamps_values = tstamp_path.read_text(encoding="utf-8").splitlines()
+        if not tstamps_values:
             raise exceptions.FileContentError(
                 f"Timestamps file '{tstamp_path.resolve()}' is empty"
             )
-        isContentNumeric = all(t.replace(".", "").isdigit() for t in tstamps_content)
+        isContentNumeric = all(t.replace(".", "").isdigit() for t in tstamps_values)
         if not isContentNumeric:
             raise exceptions.FileContentError(
                 f"Timestamps file '{tstamp_path.resolve()}' contains "
                 "values that cannot be interpreted as timestamps"
             )
-        tstamps = [float(v) for v in tstamps_content]
     elif timestamps is not None:
         # Received list of timestamps
-        tstamps = [float(v) for v in list(timestamps)]
+        tstamps_values = list(timestamps)
+    else:
+        tstamps_values = [-1]
+    tstamps = [float(v) for v in tstamps_values]
     if outbag:
         splitter.split_rosbag(
-            timestamps=timestamps,
+            timestamps=tstamps,
             outbag_path=outbag,
             force_out=force,
         )
     else:
         path = Path(inbag)
         path = path.with_name(path.stem + "_split" + path.suffix)
-        splitter.split_rosbag(timestamps=timestamps, outbag_path=path, force_out=force)
+        splitter.split_rosbag(timestamps=tstamps, outbag_path=path, force_out=force)

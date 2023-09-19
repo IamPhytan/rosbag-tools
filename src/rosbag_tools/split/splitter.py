@@ -57,6 +57,11 @@ class BagSplitter:
             self._bag_end = bag.end_time
             self._bag_duration = bag.duration
 
+    @property
+    def total_duration(self) -> int:
+        """Duration of the bag file"""
+        return self._bag_duration
+
     def get_reader_class(self, filename: Path | str) -> Type[Reader1 | Reader2]:
         """Return the reader class that corresponds to the filename
 
