@@ -35,7 +35,7 @@ from rosbag_tools.utils import custom_message_path
     "--timestamps-file",
     "timestamps_file",
     type=click.Path(exists=True),
-    help="Path to a file containing timestamps representing elapsed seconds since the start of the rosbag."
+    help="Path to a file containing timestamps representing elapsed seconds since the start of the rosbag. "
     "Each timestamp is on an individual line.",
 )
 @click.option(

@@ -18,7 +18,7 @@ A basic use of `split` is to simply call it from the command line.
 rosbag-tools split path/to/rosbag -o /path/to/clip -t "[timestamp1, timestamp2]"
 ```
 
-Here are all the CLI options of `rosbag-tools clip`:
+Here are all the CLI options of `rosbag-tools split`:
 
 ```console
 $ rosbag-tools split -h
@@ -31,12 +31,15 @@ Usage: rosbag-tools split [OPTIONS] INBAG
 Options:
   -o, --output, --outbag TEXT  Basename of the split bag files. Defaults to
                                INBAG_COUNT
-  -t, --timestamps TEXT        List of timestamps in the format [S., S.], in
+  -t, --timestamps TEXT        List of timestamps in the format '[S., S.]', in
                                elapsed seconds since the start of the rosbag
-  --timestamps_file TEXT       Csv file containing timestamps representing
-                               elapsed seconds since the start of the rosbag.
-                               Each timestamp is on an individual line.
+  --timestamps-file PATH       Path to a file containing timestamps
+                               representing elapsed seconds since the start of
+                               the rosbag. Each timestamp is on an individual
+                               line.
   -f, --force-overwriting      Force output file overwriting
+  --msg, --msg-path PATH       Custom messages path. Can be a path to a ROS
+                               workspace.
   -h, --help                   Show this message and exit.
 ```
 
@@ -49,14 +52,14 @@ from rosbag_tools.split import BagSplitter
 
 data_path = "path/to/a/rosbag.bag"  # ROS 1
 data_path = "path/to/a/rosbag"  # ROS 2
-clipper = BagSplitter(data_path)
+splitter = BagSplitter(data_path)
 
 # Change the input bag
-clipper.inbag = "path/to/another/rosbag"
+splitter.inbag = "path/to/another/rosbag"
 
 # Split the bagfile at 42 seconds
-clipper.split_rosbag(timestamps=[42.], outbag_path="path/to/clip")
+splitter.split_rosbag(timestamps=[42.0], outbag_path="path/to/clip")
 
 # Save 3 bagfiles
-clipper.split_rosbag(timestamps=[10., 42.], outbag_path="/clip/out/first/25/seconds")
+splitter.split_rosbag(timestamps=[10.0, 42.0], outbag_path="/clip/out/first/25/seconds")
 ```
