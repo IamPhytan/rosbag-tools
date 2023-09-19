@@ -152,9 +152,6 @@ class BagSplitter:
                 f"export to {export_path.name} even if output bag already exists."
             )
         if export_path.exists() and force_out:
-            warnings.warn(
-                f"Output path {export_path} already exists, output overwriting flag has been set, deleting old output file"
-            )
             self.delete_rosbag(export_path)
 
 
@@ -204,16 +201,16 @@ class BagSplitter:
 
         # Reader / Writer classes
         Reader = self.get_reader_class(self._inbag)
+        base_path = Path(outbag_path)
 
-        outbag_ctr = 1
         with Reader(self._inbag) as reader:
 
-            curr_outbag_path = outbag_path + f"_{outbag_ctr}"
+            outbag_ctr = 1
+            export_path = base_path.with_name(base_path.stem + str(outbag_ctr) + base_path.suffix)
             # Check Export Path
-            export_path = Path(curr_outbag_path)
             self._check_export_path(export_path, force_out)
 
-            Writer = self.get_writer_class(outbag_path)
+            Writer = self.get_writer_class(export_path)
             if self._is_ros1_reader != self._is_ros1_writer:
                 raise NotImplementedError(
                     "Rosbag conversion (ROS 1->ROS 2 / ROS 2->ROS 1) is not supported. "
@@ -224,8 +221,11 @@ class BagSplitter:
             writer.open()
             conn_map = self.set_writer_connections(writer, reader.connections)
 
+            timestamps = [ts*1e9 for ts in timestamps]
+            timestamps.append(self._bag_end)
+
             s_cliptstamp = self._bag_start
-            e_cliptstamp = self._bag_start + timestamps[outbag_ctr - 1]
+            e_cliptstamp = self._bag_start + timestamps[0]
             with tqdm(total=reader.message_count) as pbar:
                 for conn, timestamp, data in reader.messages():
                     if s_cliptstamp <= timestamp <= e_cliptstamp:
@@ -234,8 +234,8 @@ class BagSplitter:
                         outbag_ctr += 1
                         s_cliptstamp = timestamp
                         e_cliptstamp = self._bag_start + timestamps[outbag_ctr - 1]
-                        curr_outbag_path = outbag_path + f"_{outbag_ctr}"
-                        export_path = Path(curr_outbag_path)
+
+                        export_path = base_path.with_name(base_path.stem + str(outbag_ctr) + base_path.suffix)
                         self._check_export_path(export_path, force_out)
 
                         writer.close()
@@ -247,4 +247,4 @@ class BagSplitter:
                     pbar.update(1)
 
         writer.close()
-        print(f"[split] Splitting done ! Exported in {outbag_path}_[1-{outbag_ctr-1}]")
+        print(f"[split] Splitting done ! Exported in {outbag_path}_[1-{outbag_ctr}]")

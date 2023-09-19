@@ -1,6 +1,7 @@
 from pathlib import Path
 import click
 from .splitter import BagSplitter
+from ..utils import custom_message_path
 
 
 @click.command(
@@ -29,7 +30,8 @@ from .splitter import BagSplitter
 @click.option(
     "--timestamps_file",
     type=str,
-    help="Csv file containing timestamps representing elapsed seconds since the start of the rosbag. Each timestamp is on an individual line.",
+    help="Text file containing timestamps representing elapsed seconds since the start of the rosbag. Each timestamp "
+         "is on an individual line.",
 )
 @click.option(
     "-f",
@@ -38,6 +40,7 @@ from .splitter import BagSplitter
     help="Force output file overwriting",
     is_flag=True,
 )
+@custom_message_path
 def cli(inbag, outbag, force, timestamps=None, timestamps_file=None):
     """Split out an INBAG
 
@@ -64,13 +67,6 @@ def cli(inbag, outbag, force, timestamps=None, timestamps_file=None):
             force_out=force,
         )
     else:
-        inpath = Path(inbag)
-        outdir_default = inpath.parent / "rosbags-clips"
-        outdir_default.mkdir(parents=True, exist_ok=True)
-        n_clips = len(list(outdir_default.glob(f"{inpath.stem}*")))
-        print(n_clips)
-        out_fname = f"{inpath.stem}_clip_{n_clips:02d}{inpath.suffix}"
-        outpath_default = outdir_default / out_fname
-        splitter.split_rosbag(
-            timestamps=timestamps, outbag_path=outpath_default, force_out=force
-        )
+        path = Path(inbag)
+        path = path.with_name(path.stem + "_split" + path.suffix)
+        splitter.split_rosbag(timestamps=timestamps, outbag_path=path, force_out=force)
