@@ -1,6 +1,7 @@
 from pathlib import Path
 
 import click
+import json
 
 from rosbag_tools import exceptions
 from rosbag_tools.split.splitter import BagSplitter
@@ -68,7 +69,7 @@ def cli(inbag, outbag, force, timestamps=None, timestamps_file=None):
             )
     elif timestamps is not None:
         # Received list of timestamps
-        tstamps_values = list(timestamps)
+        tstamps_values = json.loads(timestamps)
     else:
         tstamps_values = [-1]
     tstamps = [float(v) for v in tstamps_values]
@@ -79,6 +80,10 @@ def cli(inbag, outbag, force, timestamps=None, timestamps_file=None):
             force_out=force,
         )
     else:
-        path = Path(inbag)
-        path = path.with_name(path.stem + "_split" + path.suffix)
-        splitter.split_rosbag(timestamps=tstamps, outbag_path=path, force_out=force)
+        inpath = Path(inbag)
+        outpath = inpath.with_name(inpath.stem + "_split" + inpath.suffix)
+        splitter.split_rosbag(
+            timestamps=tstamps,
+            outbag_path=outpath,
+            force_out=force,
+        )

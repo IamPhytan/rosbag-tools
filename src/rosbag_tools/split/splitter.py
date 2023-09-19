@@ -1,27 +1,22 @@
-"""ROSBag clipper class"""
+"""ROSBag splitter class"""
 
 from __future__ import annotations
 
 import shutil
-import warnings
 from pathlib import Path
-from typing import TYPE_CHECKING, cast
+from typing import TYPE_CHECKING, List, Sequence, cast
 
-from rosbags.interfaces import ConnectionExtRosbag1, ConnectionExtRosbag2
+from rosbags.interfaces import Connection, ConnectionExtRosbag1, ConnectionExtRosbag2
 from rosbags.rosbag1 import Reader as Reader1
 from rosbags.rosbag1 import Writer as Writer1
 from rosbags.rosbag2 import Reader as Reader2
 from rosbags.rosbag2 import Writer as Writer2
 from tqdm import tqdm
 
+from rosbag_tools import exceptions
+
 if TYPE_CHECKING:
-    from typing import Optional, Type
-
-
-class InvalidTimestampError(ValueError):
-    """Exception for invalid times"""
-
-    pass
+    from typing import Type
 
 
 class BagSplitter:
@@ -80,7 +75,7 @@ class BagSplitter:
         self._is_ros1_writer = is_ros1
         return Writer1 if is_ros1 else Writer2
 
-    def delete_rosbag(self, path: Path | str):
+    def _delete_rosbag(self, path: Path | str) -> None:
         """Function to delete a rosbag at path `path`, to use with caution
 
         Args:
@@ -95,29 +90,29 @@ class BagSplitter:
         else:
             raise ValueError(f"Path {path} is not a valid rosbag")
 
-    def _check_cutoff_limits(self, timestamps: [float]):
-        """Check that clip limits are in the range of the bag
+    def _check_cutoff_limits(self, timestamps: Sequence[float]) -> None:
+        """Check that provided timestamps are in the range of the bag
 
         Args:
-            timestamps: Ros timestamps
+            timestamps (Sequence[float]): ROS timestamps
 
         Raises:
             InvalidTimestampError: _raised if `timestamp` is not in the rosbag_
         """
         for ts in timestamps:
-            time_ns = ts * 1e9
-            if time_ns + self._bag_start < self._bag_start:
-                raise InvalidTimestampError(
-                    f"Split time (s: {time_ns}) should come "
-                    f"after start time (e: {self._bag_start})."
+            time_ns = self.etoa(ts)
+            if time_ns < self._bag_start:
+                raise exceptions.InvalidTimestampError(
+                    f"Split time (s: {ts}) should come "
+                    f"after start time (ns: {self._bag_start})."
                 )
-            if time_ns + self._bag_start > self._bag_end:
-                raise InvalidTimestampError(
-                    f"Split time (s: {time_ns}) should come "
-                    f"before ending time (e: {self._bag_end})."
+            if time_ns > self._bag_end:
+                raise exceptions.InvalidTimestampError(
+                    f"Split time (s: {ts}) should come "
+                    f"before ending time (s: {self.total_duration})."
                 )
 
-    def _check_export_path(self, export_path: Path, force_out):
+    def _check_export_path(self, export_path: Path, force_out: bool) -> None:
         if export_path == self._inbag:
             raise FileExistsError(
                 f"Cannot use same file as input and output [{export_path}]"
@@ -125,13 +120,26 @@ class BagSplitter:
         if export_path.exists() and not force_out:
             raise FileExistsError(
                 f"Path {export_path.name} already exists. "
-                "Use 'force_out=True' or 'rosbag-tools clip -f' to "
+                "Use 'force_out=True' or 'rosbag-tools split -f' to "
                 f"export to {export_path.name} even if output bag already exists."
             )
         if export_path.exists() and force_out:
-            self.delete_rosbag(export_path)
+            self._delete_rosbag(export_path)
 
-    def set_writer_connections(self, writer, connections) -> {}:
+    def _set_writer_connections(
+        self,
+        writer: Writer1 | Writer2,
+        connections: List[Connection],
+    ) -> dict:
+        """Generate connection map from Reader connections and a Writer instance
+
+        Args:
+            writer (Writer1 | Writer2): Writer Instance
+            connections (List[Connection]): List of connections from Reader
+
+        Returns:
+            dict: Connection Map dictionary
+        """
         conn_map = {}
         ConnectionExt = (
             ConnectionExtRosbag1 if self._is_ros1_writer else ConnectionExtRosbag2
@@ -160,9 +168,31 @@ class BagSplitter:
                 )
         return conn_map
 
+    def etoa(self, elapsed_time: float) -> float:
+        """Elapsed to absolute timestamp
+
+        Args:
+            elapsed_time (float): time since the start of the ROSbag
+
+        Returns:
+            float: Absolute ROS timestamp
+        """
+        return elapsed_time * 1e9 + self._bag_start
+
+    def atoe(self, absolute_time: float) -> float:
+        """Absolute timstamp to elapsed time
+
+        Args:
+            absolute_time (float): Absolute ROS timestamp
+
+        Returns:
+            float: time since the start of the ROSbag
+        """
+        return (absolute_time - self._bag_start) / 1e9
+
     def split_rosbag(
         self,
-        timestamps: [str] = None,
+        timestamps: Sequence[float] | None = None,
         outbag_path: Path | str = None,
         force_out: bool = False,
     ):
@@ -173,57 +203,45 @@ class BagSplitter:
             outbag_path (Path | str): Path of output bag.
             force_squash (bool); Force output bag overwriting, if outbag already exists. Defaults to False.
         """
-        self._check_cutoff_limits(timestamps)
+        if timestamps is None:
+            timestamps = []
+        split_tstamps = [self.etoa(t) for t in timestamps]
+        self._check_cutoff_limits(split_tstamps)
+        split_tstamps.insert(0, 0)
+        split_tstamps.append(self.atoe(self._bag_end))
+        split_tstamps.sort()
 
         # Reader / Writer classes
+        # Should be the same type of rosbag for both
         Reader = self.get_reader_class(self._inbag)
+        Writer = self.get_writer_class(outbag_path)
+        if self._is_ros1_reader != self._is_ros1_writer:
+            raise NotImplementedError(
+                "Rosbag conversion (ROS 1->ROS 2 / ROS 2->ROS 1) is not supported. "
+                "Use `rosbags` to convert your rosbag before using `rosbag-tools split`."
+            )
+
         base_path = Path(outbag_path)
 
         with Reader(self._inbag) as reader:
-            outbag_ctr = 1
-            export_path = base_path.with_name(
-                base_path.stem + str(outbag_ctr) + base_path.suffix
-            )
-            # Check Export Path
-            self._check_export_path(export_path, force_out)
-
-            Writer = self.get_writer_class(export_path)
-            if self._is_ros1_reader != self._is_ros1_writer:
-                raise NotImplementedError(
-                    "Rosbag conversion (ROS 1->ROS 2 / ROS 2->ROS 1) is not supported. "
-                    "Use `rosbags` to convert your rosbag before using `rosbag-tools clip`."
+            for idx in range(1, len(split_tstamps)):
+                export_path = base_path.with_name(
+                    f"{base_path.stem}_{idx:02d}{base_path.suffix}"
                 )
-
-            writer = Writer(export_path)
-            writer.open()
-            conn_map = self.set_writer_connections(writer, reader.connections)
-
-            timestamps = [ts * 1e9 for ts in timestamps]
-            timestamps.append(self._bag_end)
-
-            s_cliptstamp = self._bag_start
-            e_cliptstamp = self._bag_start + timestamps[0]
-            with tqdm(total=reader.message_count) as pbar:
-                for conn, timestamp, data in reader.messages():
-                    if s_cliptstamp <= timestamp <= e_cliptstamp:
-                        writer.write(conn_map[conn.id], timestamp, data)
-                    else:
-                        outbag_ctr += 1
-                        s_cliptstamp = timestamp
-                        e_cliptstamp = self._bag_start + timestamps[outbag_ctr - 1]
-
-                        export_path = base_path.with_name(
-                            base_path.stem + str(outbag_ctr) + base_path.suffix
-                        )
-                        self._check_export_path(export_path, force_out)
-
-                        writer.close()
-
-                        Writer = self.get_writer_class(outbag_path)
-                        writer = Writer(export_path)
-                        writer.open()
-                        conn_map = self.set_writer_connections(writer, reader.connections)
-                    pbar.update(1)
-
-        writer.close()
-        print(f"[split] Splitting done ! Exported in {outbag_path}_[1-{outbag_ctr}]")
+                self._check_export_path(export_path, force_out)
+                print(split_tstamps)
+                with Writer(export_path) as writer:
+                    conn_map = self._set_writer_connections(writer, reader.connections)
+                    # Start and end of split
+                    a_tstamp = self._bag_start + split_tstamps[idx - 1]
+                    b_tstamp = self._bag_start + split_tstamps[idx]
+                    with tqdm(total=reader.message_count) as pbar:
+                        for conn, timestamp, data in reader.messages():
+                            if conn.topic == "/events/write_split":
+                                continue
+                            if a_tstamp <= timestamp <= b_tstamp:
+                                writer.write(conn_map[conn.id], timestamp, data)
+                            elif timestamp > b_tstamp:
+                                break
+                            pbar.update(1)
+        print(f"[split] Splitting done ! Exported in {outbag_path}_[1-{idx}]")
