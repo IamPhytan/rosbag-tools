@@ -1,6 +1,15 @@
 Changelog
 =========
 
+0.0.6
+-----------------------------
+
+- Add citation file to the repository.
+- Added `rosbag-tools split`. Thanks to @boxanm for the contribution !
+- Unify exceptions in a common file for all tools.
+- Update tools for [rosbags v0.9.16](https://gitlab.com/ternaris/rosbags/-/tags/v0.9.16)
+- Add a command decorator to specify custom msg paths for any tool. Can be used when a specific message type is unknown to rosbags.
+
 0.0.5
 -----------------------------
 
