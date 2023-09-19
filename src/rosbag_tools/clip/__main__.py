@@ -1,4 +1,4 @@
-"""Rosbag timestamp-based trimmer
+"""ROSbag timestamp-based trimmer
 
 Clip out a section of a long rosbag
 """
