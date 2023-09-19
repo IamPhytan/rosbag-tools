@@ -2,8 +2,8 @@
 
 
 from .clip import clip
-from .split import split
 from .compute_duration import compute_duration
+from .split import split
 from .topic_compare import topic_compare
 from .topic_remove import topic_remove
 

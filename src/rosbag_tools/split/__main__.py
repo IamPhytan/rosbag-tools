@@ -1,6 +1,6 @@
-"""Rosbag timestamp-based trimmer
+"""ROSbag timestamp-based splitter
 
-Clip out a section of a long rosbag
+Split a long rosbag into smaller rosbag sections
 """
 
 from rosbag_tools.split import split
