@@ -27,10 +27,11 @@ pipx install rosbag-tools[plot] # with plot
 
 ## Tools
 
+* [`clip`](src/rosbag_tools/clip)
+* [`split`](src/rosbag_tools/split)
+* [`compute-duration`](src/rosbag_tools/compute_duration)
 * [`topic-compare`](src/rosbag_tools/topic_compare)
 * [`topic-remove`](src/rosbag_tools/topic_remove)
-* [`clip`](src/rosbag_tools/clip)
-* [`compute-duration`](src/rosbag_tools/compute_duration)
 
 ## Usage
 
