@@ -7,6 +7,8 @@ import warnings
 from pathlib import Path
 from typing import TYPE_CHECKING, cast
 
+from rosbag_tools import exceptions
+
 from rosbags.interfaces import ConnectionExtRosbag1, ConnectionExtRosbag2
 from rosbags.rosbag1 import Reader as Reader1
 from rosbags.rosbag1 import Writer as Writer1
@@ -16,24 +18,6 @@ from tqdm import tqdm
 
 if TYPE_CHECKING:
     from typing import Optional, Type
-
-
-class UnknownStartTimeError(ValueError):
-    """Exception for start times"""
-
-    pass
-
-
-class UnknownEndTimeError(ValueError):
-    """Exception for end times"""
-
-    pass
-
-
-class UnorderedTimeError(ValueError):
-    """Exception for time order (Start < End)"""
-
-    pass
 
 
 class BagClipper:
@@ -121,17 +105,17 @@ class BagClipper:
         start_ns = start * 10**9 if slimit else start
         end_ns = end * 10**9 if elimit else end
         if slimit and start_ns < 0 and start_ns > self._bag_duration:
-            raise UnknownStartTimeError(
+            raise exceptions.UnknownStartTimeError(
                 f"Start time ({start} s) is not in the bag. "
                 f"Start time should be defined between 0 and {self._bag_duration} s."
             )
         if elimit and end_ns < 0 and end_ns > self._bag_duration:
-            raise UnknownEndTimeError(
+            raise exceptions.UnknownEndTimeError(
                 f"End time ({end} s) is not in the bag. "
                 f"End time should be defined between 0 and {self._bag_duration} s."
             )
         if slimit and elimit and end < start:
-            raise UnorderedTimeError(
+            raise exceptions.UnorderedTimeError(
                 f"Start time (s: {start}) should come " f"before ending time (e: {end})."
             )
 
