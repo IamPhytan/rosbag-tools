@@ -51,7 +51,7 @@ class BagClipper:
         self.inbag: Path = Path(path)
 
     @property
-    def inbag(self):
+    def inbag(self) -> Path:
         """Path to input rosbag"""
         return self._inbag
 

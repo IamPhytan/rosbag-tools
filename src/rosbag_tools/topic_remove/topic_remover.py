@@ -34,7 +34,7 @@ class BagTopicRemover:
         self.inbag = Path(path)
 
     @property
-    def inbag(self):
+    def inbag(self) -> Path:
         """The inbag property."""
         return self._inbag
 
