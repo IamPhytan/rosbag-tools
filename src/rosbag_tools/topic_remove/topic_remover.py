@@ -125,7 +125,7 @@ class BagTopicRemover:
             patterns = (patterns,)
         self._intopics = self.filter_out_topics(self._intopics, patterns)
 
-    def delete_rosbag(self, path: Path | str):
+    def _delete_rosbag(self, path: Path | str):
         """Function to delete a rosbag at path `path`, to use with caution
 
         Args:
@@ -164,7 +164,7 @@ class BagTopicRemover:
             warnings.warn(
                 f"Output path {outpath} already exists, output overwriting flag has been set, deleting old output file"
             )
-            self.delete_rosbag(outpath)
+            self._delete_rosbag(outpath)
 
         # Reader / Writer classes
         Reader = self.get_reader_class(self.inbag)
@@ -187,7 +187,7 @@ class BagTopicRemover:
                             conn.topic,
                             conn.msgtype,
                             conn.msgdef,
-                            conn.md5sum,
+                            conn.digest,
                             ext.callerid,
                             ext.latching,
                         )
@@ -196,8 +196,8 @@ class BagTopicRemover:
                         conn_map[conn.id] = writer.add_connection(
                             conn.topic,
                             conn.msgtype,
-                            ext.serialization_format,
-                            ext.offered_qos_profiles,
+                            serialization_format=ext.serialization_format,
+                            offered_qos_profiles=ext.offered_qos_profiles,
                         )
 
             with tqdm(total=reader.message_count) as pbar:
