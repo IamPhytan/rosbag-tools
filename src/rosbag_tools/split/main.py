@@ -1,7 +1,10 @@
 from pathlib import Path
+
 import click
-from .splitter import BagSplitter
-from ..utils import custom_message_path
+
+from rosbag_tools import exceptions
+from rosbag_tools.split.splitter import BagSplitter
+from rosbag_tools.utils import custom_message_path
 
 
 @click.command(
@@ -25,13 +28,14 @@ from ..utils import custom_message_path
     "--timestamps",
     default=None,
     type=str,
-    help="List of timestamps in the format [S., S.], in elapsed seconds since the start of the rosbag",
+    help="List of timestamps in the format '[S., S.]', in elapsed seconds since the start of the rosbag",
 )
 @click.option(
-    "--timestamps_file",
-    type=str,
-    help="Text file containing timestamps representing elapsed seconds since the start of the rosbag. Each timestamp "
-         "is on an individual line.",
+    "--timestamps-file",
+    "timestamps_file",
+    type=click.Path(exists=True),
+    help="Path to a file containing timestamps representing elapsed seconds since the start of the rosbag."
+    "Each timestamp is on an individual line.",
 )
 @click.option(
     "-f",
@@ -47,19 +51,25 @@ def cli(inbag, outbag, force, timestamps=None, timestamps_file=None):
     INBAG is the path to a rosbag file
     Can be a bag in ROS 1 or in ROS 2
     """
-    # TODO: Add default behavior
     splitter = BagSplitter(inbag)
     if timestamps_file is not None:
-        timestamps = []
-        with open(timestamps_file) as file:
-            for line in file.readlines():
-                timestamps.append(line)
+        # Received path to timestamps file
+        tstamp_path = Path(timestamps_file)
+        tstamps_content = tstamp_path.read_text(encoding="utf-8").splitlines()
+        if not tstamps_content:
+            raise exceptions.FileContentError(
+                f"Timestamps file '{tstamp_path.resolve()}' is empty"
+            )
+        isContentNumeric = all(t.replace(".", "").isdigit() for t in tstamps_content)
+        if not isContentNumeric:
+            raise exceptions.FileContentError(
+                f"Timestamps file '{tstamp_path.resolve()}' contains "
+                "values that cannot be interpreted as timestamps"
+            )
+        tstamps = [float(v) for v in tstamps_content]
     elif timestamps is not None:
-        timestamps = timestamps.replace("[", "")
-        timestamps = timestamps.replace("]", "")
-        timestamps = timestamps.replace(" ", "")
-        timestamps = timestamps.split(",")
-    timestamps = [float(s) for s in timestamps]
+        # Received list of timestamps
+        tstamps = [float(v) for v in list(timestamps)]
     if outbag:
         splitter.split_rosbag(
             timestamps=timestamps,
