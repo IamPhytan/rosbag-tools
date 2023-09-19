@@ -18,34 +18,6 @@ if TYPE_CHECKING:
     from typing import Optional, Type
 
 
-from rosbags.typesys import get_types_from_msg, register_types
-
-
-def guess_msgtype(path: Path) -> str:
-    """Guess message type name from path."""
-    name = path.relative_to(path.parents[2]).with_suffix('')
-    if 'msg' not in name.parts:
-        name = name.parent / 'msg' / name.name
-    return str(name)
-
-
-add_types = {}
-path_dir = Path("/home/user/ros_ws/install/rslidar_msgs/share/rslidar_msgs/msg")
-for msgpath in path_dir.glob("*.msg"):
-    msgdef = msgpath.read_text(encoding='utf-8')
-    add_types.update(get_types_from_msg(msgdef, guess_msgtype(msgpath)))
-
-register_types(add_types)
-
-# Type import works only after the register_types call,
-# the classname is derived from the msgtype names above.
-
-# pylint: disable=no-name-in-module,wrong-import-position
-from rosbags.typesys.types import rslidar_msgs__msg__RslidarScan # type: ignore  # noqa
-from rosbags.typesys.types import rslidar_msgs__msg__RslidarPacket # type: ignore  # noqa
-
-# pylint: enable=no-name-in-module,wrong-import-position
-
 class InvalidTimestampError(ValueError):
     """Exception for invalid times"""
 
@@ -67,7 +39,7 @@ class BagSplitter:
         self.inbag: Path = Path(path)
 
     @property
-    def inbag(self):
+    def inbag(self) -> Path:
         """Path to input rosbag"""
         return self._inbag
 
@@ -118,9 +90,7 @@ class BagSplitter:
         else:
             raise ValueError(f"Path {path} is not a valid rosbag")
 
-    def _check_cutoff_limits(
-        self, timestamps: [float]
-    ):
+    def _check_cutoff_limits(self, timestamps: [float]):
         """Check that clip limits are in the range of the bag
 
         Args:
@@ -133,13 +103,15 @@ class BagSplitter:
             time_ns = ts * 1e9
             if time_ns + self._bag_start < self._bag_start:
                 raise InvalidTimestampError(
-                    f"Split time (s: {time_ns}) should come " f"after start time (e: {self._bag_start})."
+                    f"Split time (s: {time_ns}) should come "
+                    f"after start time (e: {self._bag_start})."
                 )
             if time_ns + self._bag_start > self._bag_end:
                 raise InvalidTimestampError(
-                    f"Split time (s: {time_ns}) should come " f"before ending time (e: {self._bag_end})."
+                    f"Split time (s: {time_ns}) should come "
+                    f"before ending time (e: {self._bag_end})."
                 )
-            
+
     def _check_export_path(self, export_path: Path, force_out):
         if export_path == self._inbag:
             raise FileExistsError(
@@ -153,7 +125,6 @@ class BagSplitter:
             )
         if export_path.exists() and force_out:
             self.delete_rosbag(export_path)
-
 
     def set_writer_connections(self, writer, connections) -> {}:
         conn_map = {}
@@ -204,9 +175,10 @@ class BagSplitter:
         base_path = Path(outbag_path)
 
         with Reader(self._inbag) as reader:
-
             outbag_ctr = 1
-            export_path = base_path.with_name(base_path.stem + str(outbag_ctr) + base_path.suffix)
+            export_path = base_path.with_name(
+                base_path.stem + str(outbag_ctr) + base_path.suffix
+            )
             # Check Export Path
             self._check_export_path(export_path, force_out)
 
@@ -221,7 +193,7 @@ class BagSplitter:
             writer.open()
             conn_map = self.set_writer_connections(writer, reader.connections)
 
-            timestamps = [ts*1e9 for ts in timestamps]
+            timestamps = [ts * 1e9 for ts in timestamps]
             timestamps.append(self._bag_end)
 
             s_cliptstamp = self._bag_start
@@ -235,7 +207,9 @@ class BagSplitter:
                         s_cliptstamp = timestamp
                         e_cliptstamp = self._bag_start + timestamps[outbag_ctr - 1]
 
-                        export_path = base_path.with_name(base_path.stem + str(outbag_ctr) + base_path.suffix)
+                        export_path = base_path.with_name(
+                            base_path.stem + str(outbag_ctr) + base_path.suffix
+                        )
                         self._check_export_path(export_path, force_out)
 
                         writer.close()
