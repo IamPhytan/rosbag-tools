@@ -8,9 +8,11 @@ Say you have a bunch of rosbags gathered inside a folder and you don't know whet
 
 * retrieve a list of the topics contained in each rosbag
 * export a summary of the topics in a JSON or YAML file
-* output a figure that gives out which topics are missing in each rosbag :
+* output a figure that gives out which topics are missing in each rosbag
 
-![Summary of missing topics](preview.png)
+Here is the result of using `rosbag-tools topic-compare` on the [Montmorency Forest Wintertime Dataset](https://github.com/norlab-ulaval/Norlab_wiki/wiki/Montmorency-Forest-Wintertime-Dataset)
+
+![Summary of missing topics](./../../../docs/rosbag-compare.jpg)
 
 ## Usage
 
