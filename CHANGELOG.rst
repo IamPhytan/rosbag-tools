@@ -1,6 +1,12 @@
 Changelog
 =========
 
+0.0.7
+-----------------------------
+
+- Add `rosbag-tools topic-compare` example to the documentation.
+- Extend the custom msg path decorator for multiple custom message paths.
+
 0.0.6
 -----------------------------
 
