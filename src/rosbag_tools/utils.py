@@ -1,8 +1,10 @@
 from functools import wraps
+from itertools import chain
 from pathlib import Path
 
 import click
 from rosbags.typesys import get_types_from_msg, register_types
+from typing import Sequence
 
 
 def guess_msgtype(path: Path) -> str:
@@ -13,22 +15,37 @@ def guess_msgtype(path: Path) -> str:
     return str(name)
 
 
+def retrieve_msg_paths(parent_path: Path) -> Sequence[str | Path]:
+    """Retrieve msg paths inside a parent path
+
+    Args:
+        parent_path (Path): Parent path
+
+    Returns:
+        Sequence[str, Path]: message paths in subfolders of parent_path
+    """
+    par_path = Path(parent_path).resolve()
+    all_msg_paths = tuple(par_path.rglob("**/msg/*.msg"))
+    msg_paths = tuple(p for p in all_msg_paths if "install" not in p.parts)
+    return msg_paths
+
+
 def custom_message_path(f):
     @wraps(f)
     @click.option(
         "--msg",
         "--msg-path",
-        "msg_path",
+        "msg_paths",
         type=click.Path(exists=True),
         help="Custom messages path. Can be a path to a ROS workspace.",
+        multiple=True,
     )
-    def wrapper(msg_path, *args, **kwargs):
-        if msg_path:
+    def wrapper(msg_paths, *args, **kwargs):
+        if msg_paths:
             add_types = {}
-            custom_path = Path(msg_path)
-            all_msg_paths = tuple(custom_path.rglob("**/msg/*.msg"))
-            msg_paths = tuple(p for p in all_msg_paths if "install" not in p.parts)
-            for msgpath in msg_paths:
+            custom_paths = [retrieve_msg_paths(msg_path) for msg_path in msg_paths]
+            custom_msg_paths = tuple(chain.from_iterable(custom_paths))
+            for msgpath in custom_msg_paths:
                 msgdef = msgpath.read_text(encoding="utf-8")
                 add_types.update(get_types_from_msg(msgdef, guess_msgtype(msgpath)))
             register_types(add_types)
