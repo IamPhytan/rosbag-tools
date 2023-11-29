@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import shutil
 from pathlib import Path
 from typing import TYPE_CHECKING, cast
@@ -20,6 +22,7 @@ class ROSBagTool:
         Args:
             path: Path to the input rosbag
         """
+        self._tool_name: str = None
         self._intopics: Tuple[str] = None
         self._is_ros1_reader: bool = None
         self._is_ros1_writer: bool = None
@@ -86,7 +89,7 @@ class ROSBagTool:
         if export_path.exists() and not force_out:
             raise FileExistsError(
                 f"Path {export_path.name} already exists. "
-                "Use 'force_out=True' or 'rosbag-tools split -f' to "
+                f"Use 'force_out=True' or 'rosbag-tools {self._tool_name} -f' to "
                 f"export to {export_path.name} even if output bag already exists."
             )
         if export_path.exists() and force_out:
