@@ -10,6 +10,8 @@ from rosbags.interfaces import ConnectionExtRosbag1, ConnectionExtRosbag2
 from tqdm import tqdm
 
 from rosbag_tools.base import ROSBagTool
+from rosbag_tools.exceptions import FileContentError
+from rosbag_tools.utils import slugify_topic
 
 if TYPE_CHECKING:
     from typing import Sequence, Tuple, Type
@@ -18,96 +20,91 @@ if TYPE_CHECKING:
 class OdometryExporter(ROSBagTool):
     """Topic Remover : Remove topics from a rosbag"""
 
-    @staticmethod
-    def filter_out_topics(
-        bag_topics: Sequence[str], patterns_to_remove: Sequence[str]
-    ) -> Tuple[str]:
-        """Filter out topics
+    ALL_ODOM_FORMATS = ("tum", "bag", "euroc", "kitti", "bag2")
+    ODOM_EXTS = {
+        "tum": ".txt",
+        "bag": ".bag",
+        "euroc": ".csv",
+        "kitti": ".txt",
+        "bag2": "",
+    }
 
-        Examples:
-        >>> bag_topics = ('/cmd_vel', '/imu/data', '/imu/data_raw', '/imu/odom', '/lidar_packets', '/map', '/velocity')
-        >>> to_filter = ('/imu/*', '/lidar_packets')
-        >>> BagTopicRemover.filter_out_topics(bag_topics, to_filter)
-        ('/cmd_vel', '/map', '/velocity')
-        >>> to_filter = ('/cmd_vel', '/map', '/velocity')
-        >>> BagTopicRemover.filter_out_topics(bag_topics, to_filter)
-        ('/imu/data', '/imu/data_raw', '/imu/odom', '/lidar_packets')
-        >>> bag_topics = ('/imu/data', '/imu/data_raw', '/imu/odom')
-        >>> to_filter = ('/camera/image_raw')
-        >>> BagTopicRemover.filter_out_topics(bag_topics, to_filter)
-        ('/imu/data', '/imu/data_raw', '/imu/odom')
-        >>> bag_topics = ('/imu/data', '/imu/data_raw', '/imu/odom')
-        >>> to_filter = ()
-        >>> BagTopicRemover.filter_out_topics(bag_topics, to_filter)
-        ('/imu/data', '/imu/data_raw', '/imu/odom')
+    def __init__(self, path: Path | str) -> None:
+        self._tool_name = "export-odometry"
+        super().__init__(path)
 
-        Args:
-            bag_topics: input rosbag's topics
-            patterns_to_remove: topics to filter out
-
-        Returns:
-            tuple: Filtered topics that were not targeted by the pattern
-        """
-        # Accumulate a list of topics
-        topics_to_remove = []
-        for pattern in patterns_to_remove:
-            pattern_topics = fnmatch.filter(bag_topics, pattern)
-            topics_to_remove.extend(pattern_topics)
-
-        # Keep only one copy of each element in the list
-        topics_to_remove = tuple(set(topics_to_remove))
-
-        filtered_topics = tuple(
-            topic for topic in bag_topics if topic not in topics_to_remove
-        )
-        return filtered_topics
-
-    def remove(self, patterns: Sequence[str] | str = ("",)) -> None:
-        """Remove topic patterns or specific topics from self._intopics
+    def export_odometry(
+        self,
+        odom_topic: str,
+        export_format: str | None = "tum",
+        export_path: Path | str | None = None,
+        force_output_overwrite: bool = False,
+    ) -> None:
+        """Export odometry topic to 'out_path'
 
         Args:
-            patterns: List, tuple of strings or string that contains a pattern or a specific topic name to remove from the bag
-        """
-        if isinstance(patterns, str):
-            patterns = (patterns,)
-        self._intopics = self.filter_out_topics(self._intopics, patterns)
-
-    def export(self, path: Path | str, force_output_overwrite: bool = False) -> None:
-        """Export filtered rosbag to 'path'
-
-        Args:
-            path: Path to export the rosbag.
-            force_output_overwrite: Force output overwriting if path already exists. Defaults to False.
+            odom_topic (str): odometry topic to export.
+            export_format (str): Odometry format. Defaults to "tum".
+            export_path (Path | str) : Export path. Defaults to None. If None, the odometry will be exported in `{inbag}_{odom_topic}.{ext}`
+            force_output_overwrite (bool): Force output overwriting if export_path already exists. Defaults to False.
 
         Raises:
-            FileExistsError: _description_
-            FileExistsError: _description_
+            NotImplementedError: _description_
         """
-        outpath = Path(path)
-        if outpath == self._inbag:
-            raise FileExistsError(f"Cannot use same file as input and output [{path}]")
-        if outpath.exists() and not force_output_overwrite:
-            raise FileExistsError(
-                f"Path {path} already exists. "
-                "Use 'force_output_overwrite=True' or `rosbag-tools topic-remove -f` "
-                f"to export to {path}, even if output bag already exists."
-            )
-        if outpath.exists() and force_output_overwrite:
-            warnings.warn(
-                f"Output path {outpath} already exists, output overwriting flag has been set, deleting old output file"
-            )
-            self._delete_rosbag(outpath)
+
+        # Check odom_topic
+        slug_odom_topic = slugify_topic(odom_topic)
+        slug_topics = (slugify_topic(topic) for topic in self.topics)
+        if slug_odom_topic not in slug_topics:
+            raise FileContentError(f"Topic {odom_topic} not found in bag {self._inbag}")
+
+        # Check odom format
+        exp_form = export_format.lower()
+        if exp_form not in self.ALL_ODOM_FORMATS:
+            raise ValueError(f"Odom format {export_format} is unknown")
+        if exp_form != "tum":
+            # TODO: Implement other odom formats
+            # Only tum is implemented as of now
+            raise NotImplementedError("As of now, only the 'tum' format is supported.")
+
+        # Check export_path
+        export_ext = self.ODOM_EXTS[exp_form]
+        if export_path is not None:
+            # Export path was given as a method argument
+            outpath = Path(export_path)
+            if outpath.suffix != export_ext:
+                raise ValueError(
+                    f"File extension is not compatible with odom format '{exp_form}'. "
+                    f"[Expected {export_ext}; got {outpath.suffix}]"
+                )
+        else:
+            # Default filename : `{inbag}_{odom_topic}.{ext}`
+            outfname = self.inbag.with_stem(
+                f"{self.inbag.stem}_{slug_odom_topic}"
+            ).with_suffix(export_ext)
+            outfname = f"{self.inbag.stem}_{slug_odom_topic}{export_ext}"
+            outpath = self.inbag.parent / outfname
+
+        self._check_export_path(export_path=outpath, force_out=force_output_overwrite)
 
         # Reader / Writer classes
         Reader = self.get_reader_class(self.inbag)
-        Writer = self.get_writer_class(path)
-        if self._is_ros1_reader != self._is_ros1_writer:
-            raise NotImplementedError(
-                "Rosbag conversion (ROS 1->ROS 2 / ROS 2->ROS 1) is not supported. "
-                "Use `rosbags` to convert your rosbag before using `rosbag-tools topic-remove`."
-            )
-        with Reader(self.inbag) as reader, Writer(outpath) as writer:
+
+        with Reader(self.inbag) as reader:
+            # TODO: Check that odom_topic is a odom topic
             conn_map = {}
+
+
+        args = {
+            "odom_topic": odom_topic,
+            "export_format": export_format,
+            "export_path": export_path,
+            "outpath": outpath,
+            "force_output_overwrite": force_output_overwrite,
+        }
+
+        print(args)
+        return args
             ConnectionExt = (
                 ConnectionExtRosbag1 if self._is_ros1_writer else ConnectionExtRosbag2
             )

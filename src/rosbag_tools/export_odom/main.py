@@ -27,7 +27,7 @@ from rosbag_tools.utils import custom_message_path, slugify_topic
     "--format",
     "--traj-form",
     "--trajectory-format",
-    "out_format",
+    "odom_format",
     help="Trajectory format, as listed in https://github.com/MichaelGrupp/evo/wiki/Formats. Defaults to 'tum'.",
     type=click.STRING,
     default="tum",
@@ -62,11 +62,7 @@ def cli(inbag, odom_topic, out_path, odom_format, force: bool):
     odom_exp = OdometryExporter(inbag)
     odom_exp.export_odometry(
         odom_topic,
-        out_path=out_path,
-        odom_format=odom_format,
+        export_format=odom_format,
+        export_path=out_path,
         force_output_overwrite=force,
     )
-
-    slug_topic = slugify_topic(odom_topic)
-    def_outfname = f"{inpath.stem}_{slug_topic}{inpath.suffix}"
-    out_odom_path = inpath.parent / def_outfname
