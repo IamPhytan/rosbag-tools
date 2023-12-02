@@ -4,9 +4,10 @@ from __future__ import annotations
 
 import warnings
 from pathlib import Path
-from typing import TYPE_CHECKING, cast
+from typing import TYPE_CHECKING
 
-from rosbags.interfaces import ConnectionExtRosbag1, ConnectionExtRosbag2
+import pandas as pd
+from rosbags.highlevel import AnyReader
 from tqdm import tqdm
 
 from rosbag_tools.base import ROSBagTool
@@ -28,6 +29,8 @@ class OdometryExporter(ROSBagTool):
         "kitti": ".txt",
         "bag2": "",
     }
+    ODOM_MSG_TYPES = ["nav_msgs/msg/Odometry"]
+    TUM_FIRST_ROW = "# timestamp tx ty tz qx qy qz qw"
 
     def __init__(self, path: Path | str) -> None:
         self._tool_name = "export-odometry"
@@ -87,52 +90,47 @@ class OdometryExporter(ROSBagTool):
 
         self._check_export_path(export_path=outpath, force_out=force_output_overwrite)
 
-        # Reader / Writer classes
-        Reader = self.get_reader_class(self.inbag)
-
-        with Reader(self.inbag) as reader:
+        # Reader
+        with AnyReader([self.inbag]) as reader:
             # TODO: Check that odom_topic is a odom topic
-            conn_map = {}
+            connections = [x for x in reader.connections if x.topic == odom_topic]
+            msgtypes = [conn.msgtype for conn in connections]
+            if not all([mtype in self.ODOM_MSG_TYPES for mtype in msgtypes]):
+                raise ValueError(
+                    f"Topic {odom_topic} is not an odometry topic. s"
+                    f"Choose a topic that has one of the following msg types : {', '.join(self.ODOM_MSG_TYPES)}."
+                )
+            msgcount = [conn.msgcount for conn in connections]
 
+            odom_data = []
+            with tqdm(total=sum(msgcount)) as pbar:
+                for conn, timestamp, data in reader.messages(connections=connections):
+                    msg = reader.deserialize(data, conn.msgtype)
 
-        args = {
-            "odom_topic": odom_topic,
-            "export_format": export_format,
-            "export_path": export_path,
-            "outpath": outpath,
-            "force_output_overwrite": force_output_overwrite,
-        }
+                    tstamp = msg.header.stamp
+                    tstamp_s = tstamp.nanosec / 1e9 + tstamp.sec
+                    pose = msg.pose.pose
+                    position = pose.position
+                    orient = pose.orientation
+                    time_dat = {
+                        "timestamp": tstamp_s,
+                        "tx": position.x,
+                        "ty": position.y,
+                        "tz": position.z,
+                        "qx": orient.x,
+                        "qy": orient.y,
+                        "qz": orient.z,
+                        "qw": orient.w,
+                    }
+                    odom_data.append(time_dat)
 
-        print(args)
-        return args
-            ConnectionExt = (
-                ConnectionExtRosbag1 if self._is_ros1_writer else ConnectionExtRosbag2
-            )
-            for conn in reader.connections:
-                if conn.topic in self._intopics:
-                    ext = cast(ConnectionExt, conn.ext)
-                    if self._is_ros1_writer:
-                        conn_map[conn.id] = writer.add_connection(
-                            conn.topic,
-                            conn.msgtype,
-                            conn.msgdef,
-                            conn.digest,
-                            ext.callerid,
-                            ext.latching,
-                        )
-                    else:
-                        # ROS 2
-                        conn_map[conn.id] = writer.add_connection(
-                            conn.topic,
-                            conn.msgtype,
-                            serialization_format=ext.serialization_format,
-                            offered_qos_profiles=ext.offered_qos_profiles,
-                        )
-
-            with tqdm(total=reader.message_count) as pbar:
-                for conn, timestamp, data in reader.messages():
-                    if conn.topic in self._intopics:
-                        writer.write(conn_map[conn.id], timestamp, data)
+                    # Update progress bar
                     pbar.update(1)
 
-        print(f"[topic-remove] Done ! Exported in {path}")
+        df = pd.DataFrame(odom_data)
+        df = df[self.TUM_FIRST_ROW[2:].split()]
+        with open(outpath, "w") as f:
+            f.write(f"{self.TUM_FIRST_ROW}\n")
+        df.to_csv(outpath, index=False, header=False, mode="a", sep=" ")
+
+        print(f"[export-odometry] Done ! Exported in {outpath}")
