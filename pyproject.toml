@@ -7,7 +7,7 @@ name = "rosbag-tools"
 authors = [{ name = "damienlarocque", email = "phicoltan@gmail.com" }]
 license = { file = "LICENSE" }
 requires-python = ">=3.9"
-dependencies = ["click", "pyyaml", "rosbags", "tqdm"]
+dependencies = ["click", "pandas", "pyyaml", "rosbags", "tqdm"]
 readme = "README.md"
 classifiers = [
     "License :: OSI Approved :: GNU General Public License v3 or later (GPLv3+)",
