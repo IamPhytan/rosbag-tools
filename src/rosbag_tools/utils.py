@@ -1,10 +1,31 @@
 from functools import wraps
 from itertools import chain
 from pathlib import Path
+from typing import Sequence
 
 import click
 from rosbags.typesys import get_types_from_msg, register_types
-from typing import Sequence
+
+
+def slugify_topic(topic: str) -> str:
+    """Convert topic into a filename-compatible string, slugify the topic name
+
+    Examples:
+    >>> slugify('/imu/data')
+    'imu_data'
+    >>> slugify('/imu/data_raw')
+    'imu_data_raw'
+    >>> slugify('/lidar_packets')
+    'lidar_packets'
+
+    Args:
+        topic (str): ROS Topic
+
+    Returns:
+        str: Slugified ROS Topic
+    """
+    topic = topic[1:] if topic.startswith("/") else topic
+    return topic.replace("/", "_")
 
 
 def guess_msgtype(path: Path) -> str:
