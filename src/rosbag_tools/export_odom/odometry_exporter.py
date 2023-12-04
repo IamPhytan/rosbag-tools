@@ -92,7 +92,7 @@ class OdometryExporter(ROSBagTool):
 
         # Reader
         with AnyReader([self.inbag]) as reader:
-            # TODO: Check that odom_topic is a odom topic
+            # Check that odom_topic is a odom topic
             connections = [x for x in reader.connections if x.topic == odom_topic]
             msgtypes = [conn.msgtype for conn in connections]
             if not all([mtype in self.ODOM_MSG_TYPES for mtype in msgtypes]):
@@ -100,8 +100,8 @@ class OdometryExporter(ROSBagTool):
                     f"Topic {odom_topic} is not an odometry topic. s"
                     f"Choose a topic that has one of the following msg types : {', '.join(self.ODOM_MSG_TYPES)}."
                 )
-            msgcount = [conn.msgcount for conn in connections]
 
+            msgcount = [conn.msgcount for conn in connections]
             odom_data = []
             with tqdm(total=sum(msgcount)) as pbar:
                 for conn, timestamp, data in reader.messages(connections=connections):
@@ -127,9 +127,10 @@ class OdometryExporter(ROSBagTool):
                     # Update progress bar
                     pbar.update(1)
 
+        # Export to TUM
         df = pd.DataFrame(odom_data)
         df = df[self.TUM_FIRST_ROW[2:].split()]
-        with open(outpath, "w") as f:
+        with open(outpath, "w", encoding="utf-8") as f:
             f.write(f"{self.TUM_FIRST_ROW}\n")
         df.to_csv(outpath, index=False, header=False, mode="a", sep=" ")
 

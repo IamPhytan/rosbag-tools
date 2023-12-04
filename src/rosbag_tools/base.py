@@ -72,8 +72,8 @@ class ROSBagTool:
         Args:
             path: Path to rosbag to delete.
         """
-        is_ros1 = path.is_file() and path.suffix == ".bag"
-        is_ros2 = path.is_dir() and len(tuple(path.glob("*.db3"))) > 0
+        is_ros1 = self.is_ros1bag(path)
+        is_ros2 = self.is_ros2bag(path)
         if is_ros1:
             path.unlink()
         elif is_ros2:
@@ -81,7 +81,71 @@ class ROSBagTool:
         else:
             raise ValueError(f"Path {path} is not a valid rosbag")
 
-    def _check_export_path(self, export_path: Path, force_out: bool) -> None:
+    def _delete_file(self, path: Path | str) -> None:
+        """Function to delete a file at path `path`, to use with caution
+
+        Args:
+            path: File path to delete.
+        """
+        if path.exists() and path.is_file():
+            path.unlink()
+        elif path.exists() and path.is_dir():
+            shutil.rmtree(path)
+        else:
+            raise ValueError(f"Path {path} is not a valid path")
+
+    @staticmethod
+    def is_ros1bag(path: Path) -> bool:
+        """Is `path` leading to a ROSBag as defined in ROS ?
+
+        Args:
+            path (Path): Path to check
+
+        Returns:
+            bool: If True, `path` is a ROSBag as defined in ROS 1 (.bag file).
+        """
+        return path.is_file() and path.suffix == ".bag"
+
+    @staticmethod
+    def is_ros2bag(path: Path) -> bool:
+        """Is `path` leading to a ROS2Bag, as defined in ROS 2 distros prior to Iron ?
+        This function checks that `path` is a ROSBag that complies to the sqlite3 storage protocol.
+
+        Args:
+            path (Path): Path to check
+
+        Returns:
+            bool: If True, `path` is a ROSBag as defined in first ROS 2 distros (folder with .db3 files).
+        """
+        return path.is_dir() and len(tuple(path.glob("*.db3"))) > 0
+
+    @staticmethod
+    def is_mcap(path: Path) -> bool:
+        """Is `path` leading to a ROSBag as defined in ROS 2 distros after humble ?
+
+        Args:
+            path (Path): Path to check
+
+        Returns:
+            bool: If True, `path` is a ROSBag as defined in recent ROS 2 distros (.mcap file).
+        """
+        return path.is_file() and path.suffix == ".mcap"
+
+    def _check_export_path(
+        self,
+        export_path: Path,
+        force_out: bool | None = False,
+    ):
+        """Check that export path doesn't exist yet. If needed, deletes file at path `export_path`
+
+        Args:
+            export_path (Path): Path for export file
+            force_output_overwrite (bool): Flag to force output overwriting if path already exists. Default to False.
+
+        Raises:
+            FileExistsError: Export path is the same as input path
+            FileExistsError: Export path already exists and output overwriting flag was not set to True
+        """
         if export_path == self._inbag:
             raise FileExistsError(
                 f"Cannot use same file as input and output [{export_path}]"
@@ -92,8 +156,12 @@ class ROSBagTool:
                 f"Use 'force_out=True' or 'rosbag-tools {self._tool_name} -f' to "
                 f"export to {export_path.name} even if output bag already exists."
             )
-        if export_path.exists() and force_out:
-            self._delete_rosbag(export_path)
+        is_deletable: bool = export_path.exists() and force_out
+        if is_deletable:
+            if self.is_ros1bag(export_path) or self.is_ros2bag(export_path):
+                self._delete_rosbag(export_path)
+            else:
+                self._delete_file(export_path)
 
 
 class DatasetTool:
