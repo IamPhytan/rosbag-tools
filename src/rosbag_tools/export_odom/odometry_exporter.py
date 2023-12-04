@@ -33,8 +33,7 @@ class OdometryExporter(ROSBagTool):
     TUM_FIRST_ROW = "# timestamp tx ty tz qx qy qz qw"
 
     def __init__(self, path: Path | str) -> None:
-        self._tool_name = "export-odometry"
-        super().__init__(path)
+        super().__init__(path, "export-odometry")
 
     def export_odometry(
         self,

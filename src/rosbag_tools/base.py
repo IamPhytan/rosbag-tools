@@ -16,13 +16,14 @@ if TYPE_CHECKING:
 class ROSBagTool:
     """ROSBagTool - Base class for a tool that acts on a single rosbag"""
 
-    def __init__(self, path: Path | str) -> None:
+    def __init__(self, path: Path | str, name: str) -> None:
         """Create a BagTopicRemover instance
 
         Args:
             path: Path to the input rosbag
+            name: Tool name
         """
-        self._tool_name: str = None
+        self._tool_name: str = name
         self._intopics: Tuple[str] = None
         self._is_ros1_reader: bool = None
         self._is_ros1_writer: bool = None
