@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import shutil
 from pathlib import Path
-from typing import TYPE_CHECKING, cast
+from typing import TYPE_CHECKING
 
 from rosbags.rosbag1 import Reader as Reader1
 from rosbags.rosbag1 import Writer as Writer1
@@ -10,7 +10,7 @@ from rosbags.rosbag2 import Reader as Reader2
 from rosbags.rosbag2 import Writer as Writer2
 
 if TYPE_CHECKING:
-    from typing import Sequence, Tuple, Type
+    from typing import Tuple, Type
 
 
 class ROSBagTool:
