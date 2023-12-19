@@ -1,9 +1,26 @@
+# This CITATION.cff file was generated with cffinit.
+# Visit https://bit.ly/cffinit to generate yours today!
+
 cff-version: 1.2.0
-message: "If you use this software in an academic work, please cite it as below."
+title: >-
+  rosbag-tools : A ROS-agnostic toolbox for common rosbag
+  operations
+message: >-
+  If you use this software in an academic work, please cite
+  it as below.
+type: software
 authors:
-  - family-names: "LaRocque"
-    given-names: "Damien"
-    orcid: https://orcid.org/my-orcid?orcid=0000-0003-3256-046X
-title: "A ROS-agnostic toolbox for common rosbag operations"
+  - family-names: LaRocque
+    given-names: Damien
+    orcid: 'https://orcid.org/0000-0003-3256-046X'
+    email: phicoltan@gmail.com
+repository-code: 'https://github.com/IamPhytan/rosbag-tools'
+url: 'https://pypi.org/project/rosbag-tools'
+abstract: >-
+  A ROS-agnostic toolbox for common rosbag operations. This
+  package bundles different tools that can be applied on ROS
+  1 or ROS 2 rosbags with no dependency on the ROS software
+  stack.
+license: GPL-3.0
 version: 0.0.8
-date-released: 2023-09-13
+date-released: '2023-12-03'
