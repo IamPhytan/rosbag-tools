@@ -1,6 +1,6 @@
 click
 matplotlib
 pyyaml
-rosbags
+rosbags==0.9.16
 tqdm
 pandas
