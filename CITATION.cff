@@ -22,5 +22,5 @@ abstract: >-
   1 or ROS 2 rosbags with no dependency on the ROS software
   stack.
 license: GPL-3.0
-version: 0.0.8
+version: 0.0.9
 date-released: '2023-12-03'
