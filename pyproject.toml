@@ -6,7 +6,7 @@ build-backend = "flit_core.buildapi"
 name = "rosbag-tools"
 authors = [{ name = "damienlarocque", email = "phicoltan@gmail.com" }]
 license = { file = "LICENSE" }
-requires-python = ">=3.9"
+requires-python = ">=3.8"
 dependencies = ["click", "pandas", "pyyaml", "rosbags==0.9.16", "tqdm"]
 readme = "README.md"
 classifiers = [
