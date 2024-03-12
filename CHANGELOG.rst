@@ -1,6 +1,24 @@
 Changelog
 =========
 
+0.0.10
+-----------------------------
+
+- Add support to Python 3.8 (thanks to @RedLeader962)
+
+0.0.9
+-----------------------------
+
+- Update build system to flit_core by @takluyver in https://github.com/IamPhytan/rosbag-tools/pull/5
+- Update citation file
+- Debug topic-remove for Python 3.9 (thanks to @ogamache)
+
+0.0.8
+-----------------------------
+
+- Add `rosbag-tools export-odometry` example to the documentation.
+- Start base tool class.
+
 0.0.7
 -----------------------------
 
