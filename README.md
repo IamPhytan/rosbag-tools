@@ -2,6 +2,8 @@
 
 > A ROS-agnostic toolbox for common rosbag operations
 
+![PyPI - Downloads](https://img.shields.io/pypi/dm/rosbag-tools?style=for-the-badge&color=blue)
+
 This package bundles different tools that can be applied on ROS 1 or ROS 2 rosbags with no dependency on the ROS software stack.
 
 ## Installation
